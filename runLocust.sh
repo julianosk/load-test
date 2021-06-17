@@ -8,8 +8,8 @@ HOST="${1}"
 SCRIPT_NAME=`basename "$0"`
 INITIAL_DELAY=1
 TARGET_HOST="$HOST"
-CLIENTS=2
-REQUESTS=10
+NUM_USERS=2
+RUN_TIME=5s
 
 
 do_check() {
@@ -28,10 +28,10 @@ do_check() {
 
   # check locust file is present
   if [ -n "${LOCUST_FILE:+1}" ]; then
-  	echo "Locust file: $LOCUST_FILE"
+    echo "Locust file: $LOCUST_FILE"
   else
-  	LOCUST_FILE="locustfile.py" 
-  	echo "Default Locust file: $LOCUST_FILE" 
+    LOCUST_FILE="locustfile.py" 
+    echo "Default Locust file: $LOCUST_FILE" 
   fi
 }
 
@@ -45,8 +45,9 @@ do_exec() {
       exit 1
   fi
 
-  echo "Will run $LOCUST_FILE against $TARGET_HOST. Spawning $CLIENTS clients and $REQUESTS total requests."
-  locust --host=http://$TARGET_HOST -f $LOCUST_FILE --clients=$CLIENTS --hatch-rate=5 --num-request=$REQUESTS --no-web --only-summary
+  echo "Will run $LOCUST_FILE against $TARGET_HOST. Spawning $NUM_USERS for $RUN_TIME."
+  locust --host=$TARGET_HOST -f $LOCUST_FILE --users=$NUM_USERS --spawn-rate=5 -t=$RUN_TIME --only-summary --headless
+
   echo "done"
 }
 
@@ -58,8 +59,8 @@ Usage:
 Options:
   -d  Delay before starting
   -h  Target host url, e.g. http://localhost/
-  -c  Number of clients (default 2)
-  -r  Number of requests (default 10)
+  -c  Number of NUM_USERS (default 2)
+  -r  Number of RUN_TIME (default 10)
 
 Description:
   Runs a Locust load simulation against specified host.
@@ -70,23 +71,23 @@ EOF
 
 
 
-while getopts ":d:h:c:r:" o; do
+while getopts ":d:h:u:t:" o; do
   case "${o}" in
     d)
         INITIAL_DELAY=${OPTARG}
-        #echo $INITIAL_DELAY
+        echo $INITIAL_DELAY
         ;;
     h)
         TARGET_HOST=${OPTARG}
-        #echo $TARGET_HOST
+        echo $TARGET_HOST
         ;;
-    c)
-        CLIENTS=${OPTARG:-2}
-        #echo $CLIENTS
+    u)
+        NUM_USERS=${OPTARG:-2}
+        echo $NUM_USERS
         ;;
-    r)
-        REQUESTS=${OPTARG:-10}
-        #echo $REQUESTS
+    t)
+        RUN_TIME=${OPTARG:-5s}
+        echo $RUN_TIME
         ;;
     *)
         do_usage
