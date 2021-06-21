@@ -10,6 +10,7 @@ INITIAL_DELAY=1
 TARGET_HOST="$HOST"
 NUM_USERS=2
 RUN_TIME=5s
+OUTPUT=--only-summary
 
 
 do_check() {
@@ -46,7 +47,7 @@ do_exec() {
   fi
 
   echo "Will run $LOCUST_FILE against $TARGET_HOST. Spawning $NUM_USERS for $RUN_TIME."
-  locust --host=$TARGET_HOST -f $LOCUST_FILE --users=$NUM_USERS --spawn-rate=$NUM_USERS -t=$RUN_TIME --only-summary --headless
+  locust --host=$TARGET_HOST -f $LOCUST_FILE --users=$NUM_USERS --spawn-rate=$NUM_USERS -t=$RUN_TIME $OUTPUT --headless
 
   echo "done"
 }
@@ -59,8 +60,9 @@ Usage:
 Options:
   -d  Delay before starting
   -h  Target host url, e.g. http://localhost/
-  -c  Number of NUM_USERS (default 2)
+  -u  Number of NUM_USERS (default 2)
   -r  Number of RUN_TIME (default 10)
+  -o  CSV output name. (default: only summary)
 
 Description:
   Runs a Locust load simulation against specified host.
@@ -71,23 +73,27 @@ EOF
 
 
 
-while getopts ":d:h:u:t:" o; do
+while getopts ":d:h:u:t:o:" o; do
   case "${o}" in
     d)
         INITIAL_DELAY=${OPTARG}
-        echo $INITIAL_DELAY
+        echo "INITIAL_DELAY=$INITIAL_DELAY"
         ;;
     h)
         TARGET_HOST=${OPTARG}
-        echo $TARGET_HOST
+        echo "TARGET_HOST=$TARGET_HOST"
         ;;
     u)
         NUM_USERS=${OPTARG:-2}
-        echo $NUM_USERS
+        echo "NUM_USERS=$NUM_USERS"
         ;;
     t)
         RUN_TIME=${OPTARG:-5s}
-        echo $RUN_TIME
+        echo "RUN_TIME=$RUN_TIME"
+        ;;
+    o)
+        OUTPUT=--csv=${OPTARG}
+        echo "OUTPUT=$OUTPUT"
         ;;
     *)
         do_usage
