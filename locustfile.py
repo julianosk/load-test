@@ -4,14 +4,15 @@ from locust import HttpUser, TaskSet, task
 from random import randint, choice
 
 
+base64string = base64.b64encode(b'user:password')
+auth_header = "Basic %s" % base64string.decode('utf-8')
+
+
 class SockShopUser(HttpUser):
 
     @task
     def load(self):
-        base64string = base64.b64encode(b'user:password')
-        
-        auth_header = "Basic %s" % base64string.decode('utf-8')
-        
+
         self.client.get("/")
         self.client.get("/login", headers={"Authorization": auth_header})
         catalogue = self.client.get("/catalogue").json()
@@ -24,4 +25,3 @@ class SockShopUser(HttpUser):
         self.client.post("/cart", json={"id": item_id, "quantity": 1})
         self.client.get("/basket.html")
         self.client.get("/orders")
-
